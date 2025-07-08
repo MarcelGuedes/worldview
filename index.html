@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Globo com Câmeras Snapshot Públicas</title>
+  <style>
+    body, html {
+      margin: 0; padding: 0; height: 100%; font-family: Arial, sans-serif; background: #121212; color: white;
+      overflow: hidden;
+    }
+    #container {
+      display: flex; height: 100vh;
+    }
+    #menu-lateral {
+      width: 320px; background: #1e1e1e; padding: 20px; display: flex; flex-direction: column;
+    }
+    #menu-lateral h1 {
+      margin: 0 0 20px 0; color: #00c8ff;
+    }
+    #menu-lateral input[type="text"] {
+      padding: 10px; font-size: 16px; margin-bottom: 20px; border-radius: 5px; border: none;
+    }
+    #menu-lateral select {
+      padding: 10px; font-size: 16px; margin-bottom: 20px; border-radius: 5px; border: none;
+    }
+    #globo-container {
+      flex-grow: 1; position: relative;
+    }
+    #camera-info {
+      position: absolute; top: 20px; right: 20px; max-width: 320px;
+      background: rgba(0,0,0,0.85); padding: 15px; border-radius: 8px;
+      display: none; color: white; z-index: 10;
+    }
+    #camera-info h3 {
+      margin-top: 0; color: #00c8ff;
+    }
+    #camera-info img {
+      width: 100%; border-radius: 5px;
+      margin-top: 10px;
+      border: 2px solid #00c8ff;
+    }
+    #camera-info button {
+      margin-top: 10px; padding: 8px 12px; background: #00c8ff; border: none; border-radius: 5px; cursor: pointer; color: #121212;
+    }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <div id="menu-lateral">
+      <h1>🌍 Câmeras Snapshot Públicas</h1>
+      <input type="text" id="search-input" placeholder="Buscar câmera ou local..." />
+      <select id="continent-filter">
+        <option value="all">Todos Continentes</option>
+        <option value="america-norte">América do Norte</option>
+        <option value="america-sul">América do Sul</option>
+        <option value="europa">Europa</option>
+        <option value="asia">Ásia</option>
+        <option value="oceania">Oceania</option>
+        <option value="africa">África</option>
+      </select>
+    </div>
+    <div id="globo-container"></div>
+  </div>
+
+  <div id="camera-info">
+    <h3 id="camera-title"></h3>
+    <p id="camera-location"></p>
+    <img id="camera-image" src="" alt="Snapshot da câmera" />
+    <button onclick="closeCameraInfo()">Fechar</button>
+  </div>
+
+  <script src="https://unpkg.com/globe.gl"></script>
+
+  <script>
+    const cameras = [
+      // América do Norte
+      { name: "Times Square - Nova York, EUA", lat: 40.7580, lng: -73.9855, continent: "america-norte", stream: "https://images.earthcam.com/ec_metros/ourcams/tsrobo.jpg" },
+      { name: "Santa Monica Beach, Califórnia, EUA", lat: 34.0100, lng: -118.4962, continent: "america-norte", stream: "https://santamonica.earthcam.com/snapshot.jpg" },
+      { name: "Miami Beach, Flórida, EUA", lat: 25.7907, lng: -80.1300, continent: "america-norte", stream: "https://www.miamibeachfl.gov/cameras/mbbcam1.jpg" },
+      { name: "Las Vegas Strip, Nevada, EUA", lat: 36.1147, lng: -115.1728, continent: "america-norte", stream: "https://www.vegascams.com/cams/strip/vegas_strip_01.jpg" },
+      { name: "Niagara Falls, Canadá", lat: 43.0896, lng: -79.0849, continent: "america-norte", stream: "https://www.niagarafallslive.com/cams/niagara_falls.jpg" },
+      { name: "Downtown Seattle, Washington, EUA", lat: 47.6062, lng: -122.3321, continent: "america-norte", stream: "https://seattle.earthcam.com/snapshot.jpg" },
+      { name: "Toronto, Canadá", lat: 43.6532, lng: -79.3832, continent: "america-norte", stream: "https://www.toronto.ca/wp-content/uploads/2021/10/8e7e-webcam.jpg" },
+
+      // América do Sul
+      { name: "Lagoa Rodrigo de Freitas, Rio de Janeiro, Brasil", lat: -22.9788, lng: -43.2110, continent: "america-sul", stream: "https://rioskycam.com.br/snapshot.jpg" },
+      { name: "Copacabana, Rio de Janeiro, Brasil", lat: -22.9712, lng: -43.1822, continent: "america-sul", stream: "https://copacabana.earthcam.com/snapshot.jpg" },
+      { name: "Plaza de Mayo, Buenos Aires, Argentina", lat: -34.6083, lng: -58.3700, continent: "america-sul", stream: "https://www.argentinawebcams.com/bsas_snapshot.jpg" },
+      { name: "Cartagena, Colômbia", lat: 10.3910, lng: -75.4794, continent: "america-sul", stream: "https://www.cartagenainfo.com/webcams/snapshot.jpg" },
+      { name: "Lima, Peru", lat: -12.0464, lng: -77.0428, continent: "america-sul", stream: "https://www.limawebcams.net/snapshot.jpg" },
+
+      // Europa
+      { name: "Tower Bridge, Londres, Reino Unido", lat: 51.5055, lng: -0.0754, continent: "europa", stream: "https://www.londonbridgewebcam.com/cam.jpg" },
+      { name: "Paris (Torre Eiffel), França", lat: 48.8584, lng: 2.2945, continent: "europa", stream: "https://cdn.webcamgalore.com/France/Paris/TourEiffel.jpg" },
+      { name: "Colônia, Alemanha", lat: 50.9375, lng: 6.9603, continent: "europa", stream: "https://www.colognewebcams.com/snapshot.jpg" },
+      { name: "Roma, Itália", lat: 41.9028, lng: 12.4964, continent: "europa", stream: "https://romawebcams.com/snapshot.jpg" },
+      { name: "Barcelona, Espanha", lat: 41.3851, lng: 2.1734, continent: "europa", stream: "https://www.barcelonawebcams.com/snapshot.jpg" },
+      { name: "Amsterdam, Holanda", lat: 52.3676, lng: 4.9041, continent: "europa", stream: "https://amsterdam.earthcam.com/snapshot.jpg" },
+      { name: "Estocolmo, Suécia", lat: 59.3293, lng: 18.0686, continent: "europa", stream: "https://stockholmwebcams.com/snapshot.jpg" },
+
+      // Ásia
+      { name: "Shibuya Crossing, Tóquio, Japão", lat: 35.6595, lng: 139.7005, continent: "asia", stream: "https://www.shibuya-crossing.jp/webcam/snapshot.jpg" },
+      { name: "Hong Kong Victoria Harbour", lat: 22.2849, lng: 114.1588, continent: "asia", stream: "https://www.hongkongwebcam.com/snapshot.jpg" },
+      { name: "Seul, Coreia do Sul", lat: 37.5665, lng: 126.9780, continent: "asia", stream: "https://seoulwebcam.net/snapshot.jpg" },
+      { name: "Mumbai, Índia", lat: 19.0760, lng: 72.8777, continent: "asia", stream: "https://www.mumbaiwebcams.com/snapshot.jpg" },
+      { name: "Taipei, Taiwan", lat: 25.0329, lng: 121.5654, continent: "asia", stream: "https://taipeiwebcams.com/snapshot.jpg" },
+
+      // Oceania
+      { name: "Bondi Beach, Sydney, Austrália", lat: -33.8915, lng: 151.2767, continent: "oceania", stream: "https://www.bondiweather.com.au/webcam/current.jpg" },
+      { name: "Auckland, Nova Zelândia", lat: -36.8485, lng: 174.7633, continent: "oceania", stream: "https://aucklandwebcam.co.nz/snapshot.jpg" },
+      { name: "Melbourne, Austrália", lat: -37.8136, lng: 144.9631, continent: "oceania", stream: "https://melbournewebcams.com/snapshot.jpg" },
+
+      // África
+      { name: "Cidade do Cabo, África do Sul", lat: -33.9249, lng: 18.4241, continent: "africa", stream: "https://www.capetown.travel/webcams/cape-town-snapshot.jpg" },
+      { name: "Nairobi, Quênia", lat: -1.2921, lng: 36.8219, continent: "africa", stream: "https://nairobiwebcam.com/snapshot.jpg" },
+      { name: "Marrakech, Marrocos", lat: 31.6295, lng: -7.9811, continent: "africa", stream: "https://marrakechwebcams.com/snapshot.jpg" }
+    ];
+
+    let globe;
+    let refreshInterval;
+
+    function initGlobe() {
+      const container = document.getElementById('globo-container');
+      container.innerHTML = ''; // limpa
+
+      const filteredCameras = getFilteredCameras();
+
+      globe = Globe()
+        .globeImageUrl('//unpkg.com/three-globe/example/img/earth-day.jpg')
+        .pointsData(filteredCameras)
+        .pointLat('lat')
+        .pointLng('lng')
+        .pointColor(() => 'red')
+        .pointAltitude(() => 0.05)
+        .pointRadius(0.6)
+        .pointLabel(d => `${d.name}`)
+        .onPointClick(showCameraInfo);
+
+      globe(container);
+    }
+
+    function getFilteredCameras() {
+      const searchTerm = document.getElementById('search-input').value.toLowerCase();
+      const continent = document.getElementById('continent-filter').value;
+
+      return cameras.filter(cam => {
+        const matchContinent = continent === 'all' || cam.continent === continent;
+        const matchSearch = cam.name.toLowerCase().includes(searchTerm);
+        return matchContinent && matchSearch;
+      });
+    }
+
+    function showCameraInfo(cam) {
+      const info = document.getElementById('camera-info');
+      const img = document.getElementById('camera-image');
+
+      document.getElementById('camera-title').textContent = cam.name;
+      document.getElementById('camera-location').textContent = `Lat: ${cam.lat.toFixed(4)}, Lng: ${cam.lng.toFixed(4)}`;
+
+      img.src = ''; // limpa para forçar reload
+      img.src = cam.stream + '?_=' + Date.now();
+
+      info.style.display = 'block';
+
+      if (refreshInterval) clearInterval(refreshInterval);
+      refreshInterval = setInterval(() => {
+        img.src = cam.stream + '?_=' + Date.now();
+      }, 5000);
+    }
+
+    function closeCameraInfo() {
+      const info = document.getElementById('camera-info');
+      info.style.display = 'none';
+      const img = document.getElementById('camera-image');
+      img.src = '';
+      if (refreshInterval) clearInterval(refreshInterval);
+    }
+
+    document.getElementById('search-input').addEventListener('input', () => {
+      initGlobe();
+      closeCameraInfo();
+    });
+    document.getElementById('continent-filter').addEventListener('change', () => {
+      initGlobe();
+      closeCameraInfo();
+    });
+
+    window.onload = () => {
+      initGlobe();
+    };
+  </script>
+</body>
+</html>

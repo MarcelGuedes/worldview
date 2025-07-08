@@ -2,92 +2,49 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>WorldView Live – Vídeos Gravados pelo Mundo</title>
+  <title>WorldView Live – Globo com Snapshots</title>
   <style>
-    body, html {
-      margin: 0; padding: 0; overflow: hidden;
-      background: #121212; color: white;
-      font-family: Arial, sans-serif;
-      height: 100%;
+    body, html { 
+      margin: 0; padding: 0; overflow: hidden; background: #121212; color: white; font-family: Arial, sans-serif; height: 100%; 
     }
-    #container {
-      display: flex;
-      height: 100vh;
-      width: 100vw;
+    #container { 
+      display: flex; height: 100vh; 
     }
-    #menu-lateral {
-      width: 320px;
-      background: #1e1e1e;
-      padding: 20px;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
+    #menu-lateral { 
+      width: 300px; background: #1e1e1e; padding: 20px; display: flex; flex-direction: column; 
     }
-    #menu-lateral h1 {
-      margin-bottom: 20px;
-      color: #00c8ff;
+    #menu-lateral h1 { 
+      margin-bottom: 20px; color: #00c8ff; 
     }
-    #menu-lateral input, #menu-lateral select {
-      margin-bottom: 15px;
-      padding: 10px;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      background: #333;
-      color: white;
+    #menu-lateral input, #menu-lateral select { 
+      margin-bottom: 15px; padding: 10px; border: none; border-radius: 5px; font-size: 16px; 
     }
-    #globo {
-      flex: 1;
-      position: relative;
+    #globo { 
+      flex: 1; 
+      width: 100%; 
+      height: 100vh;  /* forçar altura total da viewport */
+      position: relative; 
     }
-    #camera-info {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      max-width: 360px;
-      background: rgba(0,0,0,0.85);
-      padding: 15px;
-      border-radius: 8px;
-      color: white;
-      z-index: 10;
-      display: none;
-      box-shadow: 0 0 10px #00c8ff;
+    #camera-info { 
+      position: absolute; top: 20px; right: 20px; max-width: 340px; background: rgba(0,0,0,0.85); padding: 15px; border-radius: 8px; 
+      display: none; color: white; z-index: 10; 
     }
-    #camera-info h3 {
-      margin-top: 0;
-      color: #00c8ff;
+    #camera-info h3 { 
+      margin-top: 0; color: #00c8ff; 
     }
-    #camera-info p {
-      margin: 5px 0 10px 0;
-      font-style: italic;
+    #camera-info img { 
+      width: 100%; border-radius: 5px; margin-top: 10px; 
     }
-    #camera-info iframe {
-      width: 100%;
-      height: 210px;
-      border: none;
-      border-radius: 6px;
-    }
-    #camera-info button {
-      margin-top: 10px;
-      padding: 8px 12px;
-      background: #00c8ff;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      color: #121212;
-      font-weight: bold;
-      transition: background-color 0.3s ease;
-    }
-    #camera-info button:hover {
-      background-color: #008db3;
+    #camera-info button { 
+      margin-top: 10px; padding: 8px 12px; background: #00c8ff; border: none; border-radius: 5px; cursor: pointer; color: #121212; 
     }
   </style>
 </head>
 <body>
   <div id="container">
     <div id="menu-lateral">
-      <h1>🌍 WorldView Gravados</h1>
-      <input type="text" id="search" placeholder="Buscar câmera..." autocomplete="off" />
+      <h1>🌍 WorldView Snapshots</h1>
+      <input type="text" id="search" placeholder="Buscar câmera..." />
       <select id="filter-continent">
         <option value="all">Todos os continentes</option>
         <option value="america-norte">América do Norte</option>
@@ -103,65 +60,29 @@
 
   <div id="camera-info">
     <h3 id="cam-title"></h3>
-    <p id="cam-location"></p>
-    <iframe id="cam-video" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    <p id="cam-loc"></p>
+    <img id="cam-img" src="" alt="Snapshot da câmera">
     <button onclick="closeInfo()">Fechar</button>
   </div>
 
   <script src="https://unpkg.com/globe.gl"></script>
   <script>
+    // Lista de câmeras
     const cameras = [
-      // América do Norte
-      { name: "Times Square (NY)", lat: 40.758, lng: -73.9855, continent: "america-norte", youtubeId: "AdUw5RdyZxI" },
-      { name: "Golden Gate (São Francisco)", lat: 37.8199, lng: -122.4783, continent: "america-norte", youtubeId: "MZdytjUr05Y" },
-
-      // América do Sul
-      { name: "Copacabana (RJ)", lat: -22.9711, lng: -43.1822, continent: "america-sul", youtubeId: "04lqk8YjPYQ" },
-      { name: "Lagoa Rodrigo de Freitas (RJ)", lat: -22.9769, lng: -43.2177, continent: "america-sul", youtubeId: "iU_Y9AvxrJg" },
-
-      // Europa
-      { name: "Tower Bridge (Londres)", lat: 51.5055, lng: -0.0754, continent: "europa", youtubeId: "8osbR3t3gGc" },
-      { name: "Praça Vermelha (Moscou)", lat: 55.7539, lng: 37.6208, continent: "europa", youtubeId: "yDkOQMa-t8Q" },
-
-      // Ásia
-      { name: "Shibuya Crossing (Tóquio)", lat: 35.6595, lng: 139.7005, continent: "asia", youtubeId: "NLj1f8DP3wQ" },
-      { name: "Marina Bay Sands (Singapura)", lat: 1.2834, lng: 103.8607, continent: "asia", youtubeId: "x9WVEiH5Qds" },
-
-      // Oceania
-      { name: "Sydney Opera House", lat: -33.8568, lng: 151.2153, continent: "oceania", youtubeId: "93BqLew6GnY" },
-      { name: "Bondi Beach", lat: -33.8915, lng: 151.2767, continent: "oceania", youtubeId: "xQkpDFWJ2GU" },
-
-      // África
-      { name: "Praia de Clifton (Cidade do Cabo)", lat: -33.9249, lng: 18.3689, continent: "africa", youtubeId: "POgxqZ_lWtQ" },
-      { name: "Ponte Nelson Mandela (Joanesburgo)", lat: -26.2041, lng: 28.0473, continent: "africa", youtubeId: "TJCHJzIX6Yw" }
+      { name: "Times Square (NY)", lat: 40.758, lng: -73.9855, continent: "america-norte", url: "https://live.staticflickr.com/65535/50963072737_69e87ca109_b.jpg" },
+      { name: "Copacabana (RJ)", lat: -22.9711, lng: -43.1822, continent: "america-sul", url: "https://live.staticflickr.com/65535/50962698968_4f4b1a8bc3_b.jpg" },
+      { name: "Shibuya Crossing (Tóquio)", lat: 35.6595, lng: 139.7005, continent: "asia", url: "https://live.staticflickr.com/65535/50962922336_66d67e4f29_b.jpg" },
+      { name: "Porto de Sydney", lat: -33.8568, lng: 151.2153, continent: "oceania", url: "https://live.staticflickr.com/65535/50962811252_5cc3d20836_b.jpg" },
+      { name: "Tower Bridge (Londres)", lat: 51.5055, lng: -0.0754, continent: "europa", url: "https://live.staticflickr.com/65535/50962856257_227b90a2d1_b.jpg" }
     ];
 
-    let globe = null;
-
+    // Função que retorna todas as câmeras SEM filtro para garantir pontos visíveis
     function filterCameras() {
-      const searchTerm = document.getElementById('search').value.toLowerCase();
-      const continentFilter = document.getElementById('filter-continent').value;
-
-      return cameras.filter(cam => {
-        const matchesName = cam.name.toLowerCase().includes(searchTerm);
-        const matchesContinent = continentFilter === 'all' || cam.continent === continentFilter;
-        return matchesName && matchesContinent;
-      });
+      // Você pode depois reativar filtros conforme desejar
+      return cameras;
     }
 
-    function showCameraInfo(cam) {
-      document.getElementById('cam-title').textContent = cam.name;
-      document.getElementById('cam-location').textContent = `Latitude: ${cam.lat.toFixed(4)}, Longitude: ${cam.lng.toFixed(4)}`;
-      const iframe = document.getElementById('cam-video');
-      iframe.src = `https://www.youtube.com/embed/${cam.youtubeId}?autoplay=1&mute=1`;
-      document.getElementById('camera-info').style.display = 'block';
-    }
-
-    function closeInfo() {
-      const info = document.getElementById('camera-info');
-      info.style.display = 'none';
-      document.getElementById('cam-video').src = '';
-    }
+    let globe = null;
 
     function initGlobe() {
       const filtered = filterCameras();
@@ -174,18 +95,30 @@
           .pointLng('lng')
           .pointColor(() => 'red')
           .pointAltitude(0.06)
-          .pointRadius(0.01)
           .pointLabel(d => d.name)
-          .onPointClick(showCameraInfo);
+          .onPointClick(showInfo);
+
         globe(document.getElementById('globo'));
       } else {
         globe.pointsData(filtered);
       }
     }
 
-    // Atualiza lista no filtro e busca
-    document.getElementById('search').addEventListener('input', initGlobe);
-    document.getElementById('filter-continent').addEventListener('change', initGlobe);
+    function showInfo(c) {
+      document.getElementById('cam-title').textContent = c.name;
+      document.getElementById('cam-loc').textContent = `Lat: ${c.lat}, Lng: ${c.lng}`;
+      const img = document.getElementById('cam-img');
+      img.src = '';
+      img.src = c.url + '?_' + Date.now();
+      document.getElementById('camera-info').style.display = 'block';
+    }
+
+    function closeInfo() {
+      document.getElementById('camera-info').style.display = 'none';
+    }
+
+    document.getElementById('search').oninput = initGlobe;
+    document.getElementById('filter-continent').onchange = initGlobe;
 
     window.onload = initGlobe;
   </script>

@@ -2,180 +2,192 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>WorldView Gravado – Vídeos do Mundo</title>
+  <title>WorldView Live – Vídeos Gravados pelo Mundo</title>
   <style>
     body, html {
       margin: 0; padding: 0; overflow: hidden;
-      background: #121212; color: white; font-family: Arial, sans-serif;
+      background: #121212; color: white;
+      font-family: Arial, sans-serif;
       height: 100%;
     }
     #container {
-      display: flex; height: 100vh;
+      display: flex;
+      height: 100vh;
+      width: 100vw;
     }
     #menu-lateral {
-      width: 320px; background: #1e1e1e; padding: 20px; display: flex; flex-direction: column;
+      width: 320px;
+      background: #1e1e1e;
+      padding: 20px;
       box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
     }
     #menu-lateral h1 {
-      margin-bottom: 20px; color: #00c8ff;
+      margin-bottom: 20px;
+      color: #00c8ff;
     }
     #menu-lateral input, #menu-lateral select {
-      margin-bottom: 20px; padding: 10px; border: none; border-radius: 5px; font-size: 16px;
+      margin-bottom: 15px;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      background: #333;
+      color: white;
     }
-    #menu-lateral button {
-      background: #00c8ff; border: none; border-radius: 5px; padding: 10px;
-      color: #121212; font-size: 16px; cursor: pointer;
-      margin-top: auto;
-      transition: background-color 0.3s ease;
-    }
-    #menu-lateral button:hover {
-      background-color: #008db3;
-    }
-    #globo-container {
-      flex-grow: 1; position: relative;
+    #globo {
+      flex: 1;
+      position: relative;
     }
     #camera-info {
-      position: absolute; top: 20px; right: 20px; max-width: 400px;
-      background: rgba(0,0,0,0.9); padding: 20px; border-radius: 10px;
-      display: none; color: white; z-index: 20;
-      box-shadow: 0 0 15px #00c8ff;
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      max-width: 360px;
+      background: rgba(0,0,0,0.85);
+      padding: 15px;
+      border-radius: 8px;
+      color: white;
+      z-index: 10;
+      display: none;
+      box-shadow: 0 0 10px #00c8ff;
     }
     #camera-info h3 {
-      margin-top: 0; margin-bottom: 10px; color: #00c8ff;
+      margin-top: 0;
+      color: #00c8ff;
     }
     #camera-info p {
-      margin: 5px 0 15px;
+      margin: 5px 0 10px 0;
+      font-style: italic;
     }
     #camera-info iframe {
-      width: 100%; height: 225px; border-radius: 8px;
+      width: 100%;
+      height: 210px;
       border: none;
+      border-radius: 6px;
     }
     #camera-info button {
-      margin-top: 15px; background: #00c8ff; border: none; border-radius: 5px;
-      padding: 10px; font-weight: bold; color: #121212; cursor: pointer;
-      width: 100%;
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: #00c8ff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      color: #121212;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+    #camera-info button:hover {
+      background-color: #008db3;
     }
   </style>
 </head>
 <body>
-
-<div id="container">
-  <div id="menu-lateral">
-    <h1>🌍 WorldView Gravado</h1>
-    <input type="text" id="search" placeholder="Buscar vídeo..." />
-    <select id="filter-continent">
-      <option value="all">Todos os Continentes</option>
-      <option value="america-norte">América do Norte</option>
-      <option value="america-sul">América do Sul</option>
-      <option value="europa">Europa</option>
-      <option value="asia">Ásia</option>
-      <option value="oceania">Oceania</option>
-      <option value="africa">África</option>
-    </select>
-    <button onclick="closeCameraInfo()">Fechar vídeo</button>
+  <div id="container">
+    <div id="menu-lateral">
+      <h1>🌍 WorldView Gravados</h1>
+      <input type="text" id="search" placeholder="Buscar câmera..." autocomplete="off" />
+      <select id="filter-continent">
+        <option value="all">Todos os continentes</option>
+        <option value="america-norte">América do Norte</option>
+        <option value="america-sul">América do Sul</option>
+        <option value="europa">Europa</option>
+        <option value="asia">Ásia</option>
+        <option value="oceania">Oceania</option>
+        <option value="africa">África</option>
+      </select>
+    </div>
+    <div id="globo"></div>
   </div>
-  <div id="globo-container"></div>
-</div>
 
-<div id="camera-info">
-  <h3 id="cam-title"></h3>
-  <p id="cam-loc"></p>
-  <iframe id="cam-video" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-</div>
+  <div id="camera-info">
+    <h3 id="cam-title"></h3>
+    <p id="cam-location"></p>
+    <iframe id="cam-video" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    <button onclick="closeInfo()">Fechar</button>
+  </div>
 
-<script src="https://unpkg.com/globe.gl"></script>
-<script>
-  const videos = [
-    // América do Norte
-    {name: "Times Square - NY, EUA", lat: 40.758, lng: -73.9855, continent: "america-norte", youtubeId: "AdUw5RdyZxI"},
-    {name: "Golden Gate Bridge - San Francisco, EUA", lat: 37.8199, lng: -122.4783, continent: "america-norte", youtubeId: "IhthxK7v6a8"},
-    {name: "Niagara Falls - EUA/Canadá", lat: 43.0896, lng: -79.0849, continent: "america-norte", youtubeId: "5Vq2LHogskk"},
-    {name: "Vancouver - Canadá", lat: 49.2827, lng: -123.1207, continent: "america-norte", youtubeId: "pZ64-Gt5qxo"},
-    {name: "Cancún - México", lat: 21.1619, lng: -86.8515, continent: "america-norte", youtubeId: "BpSLsEv61rk"},
+  <script src="https://unpkg.com/globe.gl"></script>
+  <script>
+    const cameras = [
+      // América do Norte
+      { name: "Times Square (NY)", lat: 40.758, lng: -73.9855, continent: "america-norte", youtubeId: "AdUw5RdyZxI" },
+      { name: "Golden Gate (São Francisco)", lat: 37.8199, lng: -122.4783, continent: "america-norte", youtubeId: "MZdytjUr05Y" },
 
-    // América do Sul
-    {name: "Copacabana - Rio de Janeiro, Brasil", lat: -22.9711, lng: -43.1822, continent: "america-sul", youtubeId: "04lqk8YjPYQ"},
-    {name: "Buenos Aires - Argentina", lat: -34.6037, lng: -58.3816, continent: "america-sul", youtubeId: "Zoy-6b6TvU4"},
-    {name: "Santiago - Chile", lat: -33.4489, lng: -70.6693, continent: "america-sul", youtubeId: "JbS3eW3DRgc"},
-    {name: "Lima - Peru", lat: -12.0464, lng: -77.0428, continent: "america-sul", youtubeId: "6uV8pUGr3OU"},
-    {name: "Cartagena - Colômbia", lat: 10.3910, lng: -75.4794, continent: "america-sul", youtubeId: "qDKkOahbWQk"},
+      // América do Sul
+      { name: "Copacabana (RJ)", lat: -22.9711, lng: -43.1822, continent: "america-sul", youtubeId: "04lqk8YjPYQ" },
+      { name: "Lagoa Rodrigo de Freitas (RJ)", lat: -22.9769, lng: -43.2177, continent: "america-sul", youtubeId: "iU_Y9AvxrJg" },
 
-    // Europa
-    {name: "Tower Bridge - Londres, Reino Unido", lat: 51.5055, lng: -0.0754, continent: "europa", youtubeId: "8osbR3t3gGc"},
-    {name: "Torre Eiffel - Paris, França", lat: 48.8584, lng: 2.2945, continent: "europa", youtubeId: "YbJOTdZBX1g"},
-    {name: "Coliseu - Roma, Itália", lat: 41.8902, lng: 12.4922, continent: "europa", youtubeId: "Y_FlAAx6hJg"},
-    {name: "Praça Vermelha - Moscou, Rússia", lat: 55.7539, lng: 37.6208, continent: "europa", youtubeId: "cM6ww6WnI1w"},
-    {name: "Amsterdam - Holanda", lat: 52.3676, lng: 4.9041, continent: "europa", youtubeId: "Dr8gAfQxlHs"},
+      // Europa
+      { name: "Tower Bridge (Londres)", lat: 51.5055, lng: -0.0754, continent: "europa", youtubeId: "8osbR3t3gGc" },
+      { name: "Praça Vermelha (Moscou)", lat: 55.7539, lng: 37.6208, continent: "europa", youtubeId: "yDkOQMa-t8Q" },
 
-    // Ásia
-    {name: "Shibuya Crossing - Tóquio, Japão", lat: 35.6595, lng: 139.7005, continent: "asia", youtubeId: "NLj1f8DP3wQ"},
-    {name: "Grande Muralha da China", lat: 40.4319, lng: 116.5704, continent: "asia", youtubeId: "J1UGvBFqVQA"},
-    {name: "Marina Bay Sands - Singapura", lat: 1.2834, lng: 103.8607, continent: "asia", youtubeId: "B3UVX_Uz33g"},
-    {name: "Taj Mahal - Índia", lat: 27.1751, lng: 78.0421, continent: "asia", youtubeId: "AkgXu9hx45Q"},
-    {name: "Bangkok - Tailândia", lat: 13.7563, lng: 100.5018, continent: "asia", youtubeId: "q8XKxdLsQYU"},
+      // Ásia
+      { name: "Shibuya Crossing (Tóquio)", lat: 35.6595, lng: 139.7005, continent: "asia", youtubeId: "NLj1f8DP3wQ" },
+      { name: "Marina Bay Sands (Singapura)", lat: 1.2834, lng: 103.8607, continent: "asia", youtubeId: "x9WVEiH5Qds" },
 
-    // Oceania
-    {name: "Sydney Opera House - Austrália", lat: -33.8568, lng: 151.2153, continent: "oceania", youtubeId: "93BqLew6GnY"},
-    {name: "Auckland - Nova Zelândia", lat: -36.8485, lng: 174.7633, continent: "oceania", youtubeId: "k2P9N-F9LjE"},
-    {name: "Great Barrier Reef - Austrália", lat: -18.2871, lng: 147.6992, continent: "oceania", youtubeId: "qRmkEkEQUkI"},
-    {name: "Melbourne - Austrália", lat: -37.8136, lng: 144.9631, continent: "oceania", youtubeId: "7c_c0LFUQLA"},
-    {name: "Fiji Islands", lat: -17.7134, lng: 178.0650, continent: "oceania", youtubeId: "3zOoeTqN5rE"},
+      // Oceania
+      { name: "Sydney Opera House", lat: -33.8568, lng: 151.2153, continent: "oceania", youtubeId: "93BqLew6GnY" },
+      { name: "Bondi Beach", lat: -33.8915, lng: 151.2767, continent: "oceania", youtubeId: "xQkpDFWJ2GU" },
 
-    // África
-    {name: "Cidade do Cabo - África do Sul", lat: -33.9249, lng: 18.4241, continent: "africa", youtubeId: "d8Ie4Wb1bMw"},
-    {name: "Marrakech - Marrocos", lat: 31.6295, lng: -7.9811, continent: "africa", youtubeId: "6r8JgtE6-9k"},
-    {name: "Nairóbi - Quênia", lat: -1.2921, lng: 36.8219, continent: "africa", youtubeId: "DuyL5c_ZvEw"},
-    {name: "Cairo - Egito", lat: 30.0444, lng: 31.2357, continent: "africa", youtubeId: "UR7vhGj6nzg"},
-    {name: "Victoria Falls - Zâmbia/Zimbábue", lat: -17.9243, lng: 25.8567, continent: "africa", youtubeId: "WDszpq6IKkA"}
-  ];
+      // África
+      { name: "Praia de Clifton (Cidade do Cabo)", lat: -33.9249, lng: 18.3689, continent: "africa", youtubeId: "POgxqZ_lWtQ" },
+      { name: "Ponte Nelson Mandela (Joanesburgo)", lat: -26.2041, lng: 28.0473, continent: "africa", youtubeId: "TJCHJzIX6Yw" }
+    ];
 
-  let globe = null;
+    let globe = null;
 
-  function filterVideos() {
-    const searchTerm = document.getElementById('search').value.toLowerCase();
-    const continentFilter = document.getElementById('filter-continent').value;
-    return videos.filter(v => 
-      v.name.toLowerCase().includes(searchTerm) && 
-      (continentFilter === "all" || v.continent === continentFilter)
-    );
-  }
+    function filterCameras() {
+      const searchTerm = document.getElementById('search').value.toLowerCase();
+      const continentFilter = document.getElementById('filter-continent').value;
 
-  function updateGlobe() {
-    const filteredVideos = filterVideos();
-    if (!globe) {
-      globe = Globe()
-        .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
-        .pointsData(filteredVideos)
-        .pointLat('lat')
-        .pointLng('lng')
-        .pointColor(() => 'red')
-        .pointAltitude(0.06)
-        .pointRadius(0.7)
-        .pointLabel(d => d.name)
-        .onPointClick(showCameraInfo);
-      globe(document.getElementById('globo-container'));
-    } else {
-      globe.pointsData(filteredVideos);
+      return cameras.filter(cam => {
+        const matchesName = cam.name.toLowerCase().includes(searchTerm);
+        const matchesContinent = continentFilter === 'all' || cam.continent === continentFilter;
+        return matchesName && matchesContinent;
+      });
     }
-  }
 
-  function showCameraInfo(d) {
-    document.getElementById('cam-title').textContent = d.name;
-    document.getElementById('cam-loc').textContent = `Lat: ${d.lat}, Lng: ${d.lng}`;
-    document.getElementById('cam-video').src = `https://www.youtube.com/embed/${d.youtubeId}?autoplay=1&mute=1`;
-    document.getElementById('camera-info').style.display = 'block';
-  }
+    function showCameraInfo(cam) {
+      document.getElementById('cam-title').textContent = cam.name;
+      document.getElementById('cam-location').textContent = `Latitude: ${cam.lat.toFixed(4)}, Longitude: ${cam.lng.toFixed(4)}`;
+      const iframe = document.getElementById('cam-video');
+      iframe.src = `https://www.youtube.com/embed/${cam.youtubeId}?autoplay=1&mute=1`;
+      document.getElementById('camera-info').style.display = 'block';
+    }
 
-  function closeCameraInfo() {
-    document.getElementById('camera-info').style.display = 'none';
-    document.getElementById('cam-video').src = '';
-  }
+    function closeInfo() {
+      const info = document.getElementById('camera-info');
+      info.style.display = 'none';
+      document.getElementById('cam-video').src = '';
+    }
 
-  document.getElementById('search').addEventListener('input', updateGlobe);
-  document.getElementById('filter-continent').addEventListener('change', updateGlobe);
+    function initGlobe() {
+      const filtered = filterCameras();
 
-  window.onload = updateGlobe;
-</script>
+      if (!globe) {
+        globe = Globe()
+          .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
+          .pointsData(filtered)
+          .pointLat('lat')
+          .pointLng('lng')
+          .pointColor(() => 'red')
+          .pointAltitude(0.06)
+          .pointRadius(0.01)
+          .pointLabel(d => d.name)
+          .onPointClick(showCameraInfo);
+        globe(document.getElementById('globo'));
+      } else {
+        globe.pointsData(filtered);
+      }
+    }
 
+    // Atualiza lista no filtro e busca
+    document.getElementById('search').addEventListener('input', initGlobe);
+    document.getElementById('filter-continent').addEventListener('change', initGlobe);
+
+    window.onload = initGlobe;
+  </script>
 </body>
 </html>

@@ -118,7 +118,7 @@
       { name: "Praia de Waikiki (Honolulu)", lat: 21.2767, lng: -157.8223, continent: "oceania", youtubeId: "3LXQWU67Ufk" },
       { name: "Praça Tiananmen (Pequim)", lat: 39.905, lng: 116.3914, continent: "asia", youtubeId: "bFXa7yoOSw8" },
       { name: "Praça Dam (Amsterdã)", lat: 52.3731, lng: 4.8922, continent: "europa", youtubeId: "Gd9d4q6WvUY" },
-      { name: "Plaça Mercadal (Reus)", lat: 41.155, lng: 1.106, continent: "europa", youtubeId: "L9HyLjRVN8E" }
+      { name: "Plaça Mercadal (Reus)", lat: 41.155, lng: 1.106, continent: "europa", youtubeId: "L9HyLjRVN8E" },
         { name: "Rio Branco (AC)", lat: -9.9754, lng: -67.8249, continent: "america-sul", youtubeId: "" },
       { name: "Maceió (AL)", lat: -9.6659, lng: -35.735, continent: "america-sul", youtubeId: "" },
       { name: "Macapá (AP)", lat: 0.0349, lng: -51.0694, continent: "america-sul", youtubeId: "" },
@@ -236,19 +236,26 @@
 
     // Exibe modal com vídeo
     function showInfo(cam) {
-      document.getElementById('cam-title').textContent = cam.name;
-      const videoContainer = document.getElementById('video-container');
-      videoContainer.innerHTML = `
-        <iframe
-          src="https://www.youtube.com/embed/${cam.youtubeId}?autoplay=1&mute=1"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen
-          loading="lazy"
-          title="Vídeo ao vivo de ${cam.name}"
-        ></iframe>
-      `;
-      document.getElementById('camera-info').style.display = 'block';
-    }
+  document.getElementById('cam-title').textContent = cam.name;
+  const videoContainer = document.getElementById('video-container');
+  
+  if (cam.youtubeId) {
+    videoContainer.innerHTML = `
+      <iframe
+        src="https://www.youtube.com/embed/${cam.youtubeId}?autoplay=1&mute=1"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+        loading="lazy"
+        title="Vídeo ao vivo de ${cam.name}"
+      ></iframe>
+    `;
+  } else {
+    videoContainer.innerHTML = `<p>Vídeo não disponível para esta câmera.</p>`;
+  }
+
+  document.getElementById('camera-info').style.display = 'block';
+}
+
 
     function closeInfo() {
       document.getElementById('camera-info').style.display = 'none';

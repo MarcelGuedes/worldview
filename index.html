@@ -2,14 +2,41 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>WorldView Live – Globo com Vídeos Gravados</title>
+  <title>WorldView Live – Globo com Vídeos ao Vivo</title>
   <style>
-    body, html { margin: 0; padding: 0; overflow: hidden; background: #121212; color: white; font-family: Arial, sans-serif; height: 100%; }
-    #container { display: flex; height: 100vh; }
-    #menu-lateral { width: 300px; background: #1e1e1e; padding: 20px; display: flex; flex-direction: column; }
-    #menu-lateral h1 { margin-bottom: 20px; color: #00c8ff; }
-    #menu-lateral input, #menu-lateral select { margin-bottom: 15px; padding: 10px; border: none; border-radius: 5px; font-size: 16px; }
-    #globo { flex: 1; position: relative; }
+    body, html {
+      margin: 0; padding: 0; overflow: hidden;
+      background: #121212; color: white;
+      font-family: Arial, sans-serif;
+      height: 100%;
+      display: flex;
+    }
+    #menu-lateral {
+      width: 320px;
+      background: #1e1e1e;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+    #menu-lateral h1 {
+      margin-bottom: 20px;
+      color: #00c8ff;
+      font-size: 24px;
+    }
+    #search, #filter-continent {
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      border: none;
+      border-radius: 5px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    #globo {
+      flex-grow: 1;
+      position: relative;
+    }
     #camera-info {
       position: absolute;
       top: 20px;
@@ -22,7 +49,11 @@
       color: white;
       z-index: 10;
     }
-    #camera-info h3 { margin-top: 0; color: #00c8ff; }
+    #camera-info h3 {
+      margin-top: 0;
+      color: #00c8ff;
+      font-size: 20px;
+    }
     #camera-info iframe {
       width: 100%;
       height: 200px;
@@ -38,97 +69,73 @@
       border-radius: 5px;
       cursor: pointer;
       color: #121212;
+      font-weight: bold;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
-  <div id="container">
-    <div id="menu-lateral">
-      <h1>🌍 WorldView Live</h1>
-      <input type="text" id="search" placeholder="Buscar câmera..." />
-      <select id="filter-continent">
-        <option value="all">Todos os continentes</option>
-        <option value="america-norte">América do Norte</option>
-        <option value="america-sul">América do Sul</option>
-        <option value="europa">Europa</option>
-        <option value="asia">Ásia</option>
-        <option value="oceania">Oceania</option>
-        <option value="africa">África</option>
-      </select>
-    </div>
-    <div id="globo"></div>
+
+  <div id="menu-lateral">
+    <h1>🌍 WorldView Live</h1>
+    <input type="text" id="search" placeholder="Buscar câmera..." />
+    <select id="filter-continent">
+      <option value="all">Todos os continentes</option>
+      <option value="america-norte">América do Norte</option>
+      <option value="america-sul">América do Sul</option>
+      <option value="europa">Europa</option>
+      <option value="asia">Ásia</option>
+      <option value="oceania">Oceania</option>
+      <option value="africa">África</option>
+    </select>
   </div>
+
+  <div id="globo"></div>
 
   <div id="camera-info">
     <h3 id="cam-title"></h3>
-    <p id="cam-loc"></p>
     <div id="video-container"></div>
     <button onclick="closeInfo()">Fechar</button>
   </div>
 
   <script src="https://unpkg.com/globe.gl"></script>
   <script>
-    // Lista de câmeras com vídeos gravados do YouTube
     const cameras = [
-      {
-        name: "Times Square (NY)",
-        lat: 40.758,
-        lng: -73.9855,
-        continent: "america-norte",
-        youtubeId: "AdUw5RdyZxI"
-      },
-      {
-        name: "Copacabana (RJ)",
-        lat: -22.9711,
-        lng: -43.1822,
-        continent: "america-sul",
-        youtubeId: "04lqk8YjPYQ"
-      },
-      {
-        name: "Shibuya Crossing (Tóquio)",
-        lat: 35.6595,
-        lng: 139.7005,
-        continent: "asia",
-        youtubeId: "NLj1f8DP3wQ"
-      },
-      {
-        name: "Porto de Sydney",
-        lat: -33.8568,
-        lng: 151.2153,
-        continent: "oceania",
-        youtubeId: "93BqLew6GnY"
-      },
-      {
-        name: "Tower Bridge (Londres)",
-        lat: 51.5055,
-        lng: -0.0754,
-        continent: "europa",
-        youtubeId: "8osbR3t3gGc"
-      }
+      { name: "Times Square (NY)", lat: 40.758, lng: -73.9855, continent: "america-norte", youtubeId: "rnXIjl_Rzy4" },
+      { name: "Copacabana (RJ)", lat: -22.9711, lng: -43.1822, continent: "america-sul", youtubeId: "6QoLEltTzIM" },
+      { name: "Shibuya Crossing (Tóquio)", lat: 35.6595, lng: 139.7005, continent: "asia", youtubeId: "tujkoXI8rWM" },
+      { name: "Porto de Sydney", lat: -33.8568, lng: 151.2153, continent: "oceania", youtubeId: "5uZa3-RMFos" },
+      { name: "Tower Bridge (Londres)", lat: 51.5055, lng: -0.0754, continent: "europa", youtubeId: "FLlkOls9j0Q" },
+      { name: "Eiffel Tower (Paris)", lat: 48.8584, lng: 2.2945, continent: "europa", youtubeId: "bds3lu5Lfow" },
+      { name: "Las Vegas Strip", lat: 36.1147, lng: -115.1728, continent: "america-norte", youtubeId: "jtvmwjzZY0c" },
+      { name: "Ponte Golden Gate (São Francisco)", lat: 37.8199, lng: -122.4783, continent: "america-norte", youtubeId: "ZE8-4L705D8" },
+      { name: "Praia de Venice (Los Angeles)", lat: 33.985, lng: -118.4695, continent: "america-norte", youtubeId: "3LXQWU67Ufk" },
+      { name: "Praça Vermelha (Moscou)", lat: 55.7539, lng: 37.6208, continent: "europa", youtubeId: "U3nLhKWEh_A" },
+      { name: "Piazza San Marco (Veneza)", lat: 45.4341, lng: 12.3388, continent: "europa", youtubeId: "dFBRpHHwQeg" },
+      { name: "Dubai Marina", lat: 25.0773, lng: 55.1301, continent: "asia", youtubeId: "IdejM6wCkxA" },
+      { name: "Central Park (Nova York)", lat: 40.7851, lng: -73.9683, continent: "america-norte", youtubeId: "4qyZLflp-sI" },
+      { name: "Marina Bay Sands (Singapura)", lat: 1.2834, lng: 103.8607, continent: "asia", youtubeId: "cRaD28UUCKY" },
+      { name: "Praia de Waikiki (Honolulu)", lat: 21.2767, lng: -157.8223, continent: "oceania", youtubeId: "3LXQWU67Ufk" },
+      { name: "Praça Tiananmen (Pequim)", lat: 39.905, lng: 116.3914, continent: "asia", youtubeId: "bFXa7yoOSw8" },
+      { name: "Praça Dam (Amsterdã)", lat: 52.3731, lng: 4.8922, continent: "europa", youtubeId: "Gd9d4q6WvUY" },
+      { name: "Plaça Mercadal (Reus)", lat: 41.155, lng: 1.106, continent: "europa", youtubeId: "L9HyLjRVN8E" }
     ];
 
-    const searchInput = document.getElementById('search');
-    const filterSelect = document.getElementById('filter-continent');
-    const cameraInfo = document.getElementById('camera-info');
-    const videoContainer = document.getElementById('video-container');
-
-    // Filtra câmeras pelo texto e continente selecionado
-    function filterCameras() {
-      const searchTerm = searchInput.value.toLowerCase();
-      const selectedContinent = filterSelect.value;
-
-      return cameras.filter(cam => {
-        const matchesName = cam.name.toLowerCase().includes(searchTerm);
-        const matchesContinent = selectedContinent === 'all' || cam.continent === selectedContinent;
-        return matchesName && matchesContinent;
-      });
+    // Filtro busca e continente
+    function filterCams() {
+      const searchTerm = document.getElementById('search').value.toLowerCase();
+      const continentFilter = document.getElementById('filter-continent').value;
+      return cameras.filter(cam =>
+        cam.name.toLowerCase().includes(searchTerm) &&
+        (continentFilter === 'all' || cam.continent === continentFilter)
+      );
     }
 
     // Inicializa o globo e pinos
     let globe = null;
 
     function initGlobe() {
-      const data = filterCameras();
+      const data = filterCams();
 
       if (!globe) {
         globe = Globe()
@@ -137,35 +144,42 @@
           .pointLat('lat')
           .pointLng('lng')
           .pointColor(() => 'red')
-          .pointAltitude(0.07)
+          .pointAltitude(0.06)
           .pointLabel(d => d.name)
           .onPointClick(showInfo);
-
         globe(document.getElementById('globo'));
       } else {
         globe.pointsData(data);
       }
     }
 
-    // Mostra o vídeo no painel lateral
+    // Exibe modal com vídeo
     function showInfo(cam) {
       document.getElementById('cam-title').textContent = cam.name;
-      document.getElementById('cam-loc').textContent = `Lat: ${cam.lat}, Lng: ${cam.lng}`;
-      videoContainer.innerHTML = `<iframe src="https://www.youtube.com/embed/${cam.youtubeId}?autoplay=1&mute=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-      cameraInfo.style.display = 'block';
+      const videoContainer = document.getElementById('video-container');
+      videoContainer.innerHTML = `
+        <iframe
+          src="https://www.youtube.com/embed/${cam.youtubeId}?autoplay=1&mute=1"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+          loading="lazy"
+          title="Vídeo ao vivo de ${cam.name}"
+        ></iframe>
+      `;
+      document.getElementById('camera-info').style.display = 'block';
     }
 
-    // Fecha o painel de vídeo e para o iframe
     function closeInfo() {
-      cameraInfo.style.display = 'none';
-      videoContainer.innerHTML = '';
+      document.getElementById('camera-info').style.display = 'none';
+      document.getElementById('video-container').innerHTML = '';
     }
 
-    searchInput.addEventListener('input', initGlobe);
-    filterSelect.addEventListener('change', initGlobe);
+    // Eventos de filtro
+    document.getElementById('search').addEventListener('input', initGlobe);
+    document.getElementById('filter-continent').addEventListener('change', initGlobe);
 
     window.onload = initGlobe;
-    window.onresize = () => globe && globe.width(window.innerWidth - 300).height(window.innerHeight);
+
   </script>
 </body>
 </html>

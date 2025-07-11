@@ -218,21 +218,21 @@
     function initGlobe() {
       const data = filterCams();
 
-      if (!globe) {
-        globe = Globe()
-          .globeImageUrl('https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.png')
-          .pointsData(data)
-          .pointLat('lat')
-          .pointLng('lng')
-          .pointColor(() => 'red')
-          .pointAltitude(0.06)
-          .pointLabel(d => d.name)
-          .onPointClick(showInfo);
-        globe(document.getElementById('globo'));
-      } else {
-        globe.pointsData(data);
-      }
-    }
+     if (!globe) {
+  globe = Globe()
+    .globeImageUrl('https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/World_map_-_low_resolution.svg/1280px-World_map_-_low_resolution.svg.png') // ou a opção da NASA
+    .pointsData(data)
+    .pointLat('lat')
+    .pointLng('lng')
+    .pointColor(() => 'red')
+    .pointAltitude(0.06)
+    .pointLabel(d => d.name)
+    .onPointClick(showInfo);
+  globe(document.getElementById('globo'));
+} else {
+  globe.pointsData(data);
+}
+
 
     // Exibe modal com vídeo
     function showInfo(cam) {
